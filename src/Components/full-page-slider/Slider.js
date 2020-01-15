@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo } from 'react';
 import PropTypes from 'prop-types'
 import { useButtonEvents ,useWheelEvent, useTouchEvent, useResize, useStyleApplicator } from './effects'
 import { Slide } from './Section'
@@ -15,12 +15,10 @@ export const SOURCES = {
 }
 
 /*
- *  Classless implementation of a framework for "virtual scrolling" in the form
+ *  Uniquely classless implementation of a framework for "virtual scrolling" in the form
  *  of a sliding-pane layout that accepts mousewheel and touch events.
  *
- *  Future work will enable button, and event binding.
- *
- *  Touch event handling borrowed from 'react-fully-scrolled',
+ *  Touch event handling inspired by 'react-fully-scrolled',
  *  a simple vertical (virtual only) scrolling component written
  *  by an unaffiliated author @giladaya.
  *
@@ -31,11 +29,8 @@ export const SOURCES = {
   *                          THE STATUS-OBJECT DESIGN PATTERN
   ****************************************************************************************
   * The `status` object is simply a mutable JavaScript object that holds state-like
-  * variables that should never cause re-render.
-  *
-  * It acts similarly to a context and stores top-level function-scoped variables in
-  * a complex functional React component. It can also be used as a way to share data
-  * between hooks.
+  * variables that should never cause re-render. It is implemented using the `useRef`
+  * react hook.
   *
   * In this design, the `status` object of the top-most parent slider is shared with all
   * children, allowing them to coordinate when parent and child sliders are allowed to
