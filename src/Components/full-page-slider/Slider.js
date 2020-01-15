@@ -65,7 +65,6 @@ export default function Slider(props) {
     useWheelEvent(props, status, changePage)
     useTouchEvent(props, status, changePage, setStyles)
     useButtonEvents(props, status, changePage)
-    props.setButtonStatus(status);
 
     /* *************************************
      *           PAGE-CHANGE LOGIC
@@ -98,16 +97,14 @@ export default function Slider(props) {
         return (focusOnChildSlider && stopPageTurn)
       }
       const preventPageChange = _ => {
-        // prevents child sliders from changing pages when not in focus
+        // prevents child sliders from changing pages when not in focus or when parent is animating
         let outOfFocus = (props.layoutIndex !== p_S.curPage),
             parentAnimating = p_S.isAnimating;
         return (outOfFocus || parentAnimating);
       }
 
       if (props.layoutIndex && preventPageChange()) return;
-      /*
-       * Child slider mutates parent slider to coordinate ordered page turns
-       */
+       // Child slider mutates parent slider's `status` objects in order to coordinate ordered page turns
         if (n<1 || n>s.maxPage) {
           console.log("hmmmm", n)
           p_S.allowPrev = true;
@@ -128,7 +125,8 @@ export default function Slider(props) {
               p_S.allowNext = true;
               p_S.allowPrev = false;
             }
-                  // perform the actual page change
+
+            // perform the actual page change AFTER child mutates parent
             s.curPage = n;
             if (preventPrev()) return;
             if (preventNext()) return;
@@ -137,25 +135,24 @@ export default function Slider(props) {
                 transform: `translate${props.orientation}(-${100*(s.curPage - 1)}${(props.orientation===`y`)?`vh`:`vw`} )`,
             })
             s.isAnimating = true;
-            p_S.isAnimating = true;
+            p_S.isAnimating = true; // child mutates parent again
         }
     }
 
     function handleTransitionEnd(){
       disableTransition();
       status.current.isAnimating=false;
-      props.parentStatus.current.isAnimating = false;
+      props.parentStatus.current.isAnimating = false;  // child mutates parent again
       props.onAfterScroll(status)
       console.log("transition end");
     }
 
     /****************************************************************************
-     * Parent & child sliders share their staus objects with each other
-     * in order to coordinate which sliders register touch and mousewheel events
+     * Parent clones children, sharing its own `status` object with each of the
+     * child sliders (SubSlider components)
      *///////////////////////////////////////////////////////////////////////////
     let parentStatus = status;
     let activated_children =  React.Children.toArray(props.children).map((child, i) => {
-
       return !(child.type === SubSlider)
         ? child
         : React.cloneElement(child, {parentStatus: parentStatus, layoutIndex: i+1, status: status})
@@ -164,14 +161,13 @@ export default function Slider(props) {
 
 
     /****************************************************************************
-     * Memoize slider container to prevent re-renders
+     * Memoize slider container to prevent re-renders & adjust styling for horizontal sliders
      *///////////////////////////////////////////////////////////////////////////
 
     const Main = () => useMemo(() => {
-      // adjust the positioning of each slide if the slider is oriented along x-axis (horizontal)
       const children = activated_children.map(
         (child, i) => {
-          let transformedChild =  (props.orientation===`y`)
+          let transformedChild = (props.orientation===`y`)
           ? child
           : React.cloneElement(child, {
               style: {
@@ -256,11 +252,9 @@ export default function Slider(props) {
 
 export function SubSlider(props) {
   const Buttons = props.buttons;
-  let status = {};
-  const setStatus = (ref) => {status=ref}
   return (
     <Slide style={{...props.style}}>
-      <Buttons status={status} show={props.showButtons} />
+      <Buttons show={props.showButtons} />
       <Slider
         parentStatus={props.parentStatus}
         layoutIndex={props.layoutIndex}
@@ -268,7 +262,6 @@ export function SubSlider(props) {
         touchEnabled={true}
         wheelEnabled={true}
         buttonIds={props.buttonIds}
-        setButtonStatus={setStatus}
       >
         {props.children}
       </Slider>

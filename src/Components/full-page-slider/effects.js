@@ -14,7 +14,6 @@ const checkSupportsPassive = () => {
 }
 
 const PASSIVE_SUPPORTED = checkSupportsPassive();  // whether the browser supports passive events, for older browsers
-const ROOT_SLIDER_INDEX = 0;
 
 /*
  * **********************************************
@@ -109,7 +108,7 @@ export function useButtonEvents(props, status, changePage) {
 }
 
 export function useWheelEvent(props, status, changePage) {
-    // checks for inertia/momentum scrolling
+    // `lethargy` checks for inertia/momentum scrolling... without this there are hundreds of trailing scroll events that cause additional page changes
     let lethargy = new Lethargy()
 
     let prevTime = new Date().getTime(),
@@ -161,7 +160,6 @@ export function useTouchEvent(props, status, changePage, setStyles) {
 
             // OPTIONAL: disable this to allow parent and child sliders to move at the same time
             parentInMotion = props.parentStatus.current.isInSwipe || props.parentStatus.current.isAnimating;
-
 
         return (isChildSlider || disabled || isAnimating || isInSwipe || parentInMotion)
     };
