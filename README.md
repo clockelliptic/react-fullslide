@@ -1,3 +1,17 @@
+# react-full-page-slider
+**A free, modern alternative to the dubiously licensed fullpage.js.**
+
+
+This is a classless React.js implementation of a full-page virtual scrolling component. Vertical and Horizontal sliders can be nested for an advanced layout. Intelligent wheel-handling and touch-handling give users a linear experience, guiding them frame-by-frame through a presentation layout.
+
+Nested slider components have a maximum supported depth of two, such nesting a horizontal slider within a top-most vertical slider. Parent and child sliders couple intelligently and tightly, sharing mutable objects in order to coordinate motion.
+
+The event handling, react hooks, and mutable objects are the essence of this component.
+
+Documentation coming soon. Please see `/src/App.js` for example usage until documentation is available.
+
+-----------------------------------------------------------------------------------
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
