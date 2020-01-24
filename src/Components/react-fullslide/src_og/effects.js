@@ -28,17 +28,21 @@ const PASSIVE_SUPPORTED = checkSupportsPassive();  // whether the browser suppor
 export function useResize(props, status, setStyles) {
     let orientation = props.orientation;
 
-    let windowMeasure = (orientation===`y`) ? window.innerHeight : window.innerWidth;
-    let dim = (orientation===`y`) ? `height` : `width`;
+    let windowMeasure = (orientation===`y`) ? window.innerHeight : window.innerWidth,
+        dim = (orientation===`y`) ? `height` : `width`;
 
     const resize = () => {
-      let translateStr = `translate${orientation}(-${windowMeasure * (status.current.curPage - 1)}px)`;
+        let sideSize = (orientation===`y`) ? status.current.previousSize[0] : status.current.previousSize[1],
+            sideDisplacement = windowMeasure - sideSize;
 
-      setStyles({
-        transform: translateStr,
-        [dim]: `${windowMeasure}px`,
-      });
+        status.current.previousSize = [window.innerHeight, window.innerWidth];
 
+        let translateStr = `translate${orientation}(-${(windowMeasure - sideDisplacement) * (status.current.curPage - 1)}px)`;
+
+        setStyles({
+            transform: translateStr,
+            [dim]: `${windowMeasure}px`,
+        });
     }
 
     useEffect(() => {

@@ -55,7 +55,9 @@ export default function Slider(props) {
       childSliderIndices: props.children.reduce((acc, child, i) => (child.type === SubSlider) ? acc.concat([i+1]) : acc
       , []),
       allowNext: true,
-      allowPrev: true
+      allowPrev: true,
+      containerEl: containerEl,
+      previousSize: [window.innerHeight, window.innerWidth]
     })
 
     /* *************************************
@@ -148,8 +150,8 @@ export default function Slider(props) {
     }
 
     /****************************************************************************
-     * Parent clones children, sharing its own `status` object with each of the
-     * child sliders (SubSlider components)
+     * Parent clones children, sharing a direct reference to its own `status`
+     * object with each of the child sliders (SubSlider components)
      *///////////////////////////////////////////////////////////////////////////
     let parentStatus = status;
     let activated_children =  React.Children.toArray(props.children).map((child, i) => {

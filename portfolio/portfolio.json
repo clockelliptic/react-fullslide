@@ -1,0 +1,16 @@
+{
+    "title":"react-full-page-slider",
+    "description":"A full-page sliding layout with intelligent touch and scroll handling. Used for the landing page of this very website!",
+    "tags":{
+       "languages":[
+          "javascript"
+       ],
+       "tooling":[
+          "react", "styled-components"
+       ],
+       "keywords":[
+          "layout", "classless", "functional", "component-based", "ui design"
+       ]
+    },
+    "n_images":0
+ }
