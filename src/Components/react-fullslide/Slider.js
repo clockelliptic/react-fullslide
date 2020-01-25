@@ -1,7 +1,7 @@
 import React, { useRef, useMemo, useEffect } from 'react';
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { useButtonEvents ,useWheelEvent, useTouchEvent, useResize, styleApplicator } from './effects'
+import { useChangePage, useButtonEvents ,useWheelEvent, useTouchEvent, useResize, styleApplicator } from './effects'
 import { Slide } from './Section'
 import { forceCheck } from 'react-lazyload'
 
@@ -91,147 +91,44 @@ export function Slider(props) {
       updateNavDots: () => {}
     })
 
-  /* *************************************
-    *               HOOKS
+
+   /* *************************************
+    *  PAGE-CHANGE & EVENT HANDLING HOOKS
     *//////////////////////////////////////
+
+    function enableTransition(dur=props.transDuration, ea=props.easing){ setStyles({ transition: `transform ${dur}s ${ea}` }) }
+    function disableTransition(){ setStyles({ transition: 'transform 0s' }) }
+
+
+    const changePage = useChangePage(props, enableTransition, setStyles)
     status.current.resetLinearTranslate = useTouchEvent(props, status, changePage, setStyles)
     status.current.resize = useResize(props, status, setStyles)
     useWheelEvent(props, status, changePage)
     useButtonEvents(props, status, changePage)
 
 
-  /* *************************************
-    *           PAGE-CHANGE LOGIC
-    *//////////////////////////////////////
-
-    function enableTransition(dur=props.transDuration, ea=props.easing){ setStyles({ transition: `transform ${dur}s ${ea}` }) }
-    function disableTransition(){ setStyles({ transition: 'transform 0s' }) }
-
-    function changePage(pageSelector, status, source, duration, easing){
-
-        let p_S = props.parentStatus.current,
-            s = status.current,
-            nextPage = pageSelector(s.curPage);
-
-        const turning = {
-            to_firstPage: () => (nextPage===1),
-            to_lastPage: () => (nextPage===s.maxPage),
-            to_a_middlePage: () => (nextPage>1 && nextPage<s.maxPage),
-            beyond_pageRange: () => (nextPage<1 || nextPage>s.maxPage),
-            decreasing: () => (nextPage < s.curPage),
-            increasing: () => (nextPage > s.curPage)
-        }
-
-        const is = {
-          a_parentSlider: () => props.layoutIndex === 0,
-          a_childSlider: () => props.layoutIndex > 0
-        }
-
-      /*  PARENT SLIDER's RULES
-       */
-        const prevent_NextPage = _ => {
-            // forces wheel navigation to browse incrementally through all slides from low pages to high pages, including slides that contain child sliders
-            let increaseNotAllowed = !s.allowNext,
-                stopPageTurn = (turning.increasing() && increaseNotAllowed);
-
-            let childSliderInView = s.childSliderIndices.includes(s.curPage),
-                childSliderAnimating = s.childStatus.map(childStatus => childStatus.current.isAnimating).includes(true),
-                childSliderActive = childSliderInView || childSliderAnimating;
-
-            return (childSliderActive && stopPageTurn && source===SOURCES.WHEEL)
-        }
-        const prevent_PrevPage = _ => {
-            // forces wheel navigation to browse incrementally through all slides from low pages to high pages, including slides that contain child sliders
-            let decreaseNotAllowed = !s.allowPrev,
-                stopPageTurn = (turning.decreasing() && decreaseNotAllowed);
-
-            let childSliderInView = s.childSliderIndices.includes(s.curPage),
-                childSliderAnimating = s.childStatus.map(childStatus => childStatus.current.isAnimating).includes(true),
-                childSliderActive = childSliderInView || childSliderAnimating;
-
-            return (childSliderActive && stopPageTurn && source===SOURCES.WHEEL)
-        }
-
-        const prevent_parent_PageChange = () => (is.a_parentSlider() && (prevent_NextPage() || prevent_PrevPage()) )
-
-        /*  CHILD-SPECIFIC SLIDER's RULES
-       */
-        const prevent_child_PageChange = _ => {
-            // prevents child sliders from changing pages when out of view or when parent is animating
-            let inView = (props.layoutIndex === p_S.curPage),
-                parentAnimating = p_S.isAnimating;
-            return (is.a_childSlider() && ( !inView || parentAnimating ));
-        }
-
-      /***************************************************************
-         * Page-change behavior is negotiated between parent and child
-         *
-         * Child slider mutates parent slider's `status` objects in order
-         * to coordinate ordered, well-defined page turns
-         *////////////////////////////////////////////////////////////
-
-        // child gives priority to parent if parent is already animating by returning early
-        if (prevent_child_PageChange()) return;
-
-        // if the child is allowed to continue they inform the parent of their behavior
-        if (turning.beyond_pageRange()) {
-          p_S.allowPrev = true;
-          p_S.allowNext = true;
-        }
-        if (turning.to_firstPage()) {
-          p_S.allowPrev = true;
-          p_S.allowNext = false;
-        }
-        if (turning.to_a_middlePage()) {
-          p_S.allowPrev = false;
-        }
-        if (turning.to_lastPage()) {
-          p_S.allowNext = true;
-          p_S.allowPrev = false;
-        }
-        // parent makes decisions in response to child's behavior
-        if (prevent_parent_PageChange()) return;
-
-
-      /***************************************************************
-         * Typical page-change behavior is resumed following parent-child negotiations
-         *////////////////////////////////////////////////////////////
-        if (turning.beyond_pageRange()) return;
-
-        props.onBeforeScroll(status, props.layoutIndex)
-
-        s.curPage = nextPage;
-
-        // all sliders are informed that an animation is occurring (sibling sliders are informed via the parent's status)
-        s.isAnimating = true;
-        p_S.isAnimating = true;
-
-        enableTransition(duration, easing);
-        setStyles({
-            transform: `translate${props.orientation}(-${100*(s.curPage - 1)}${(props.orientation===`y`)?`vh`:`vw`} )`,
-        })
-        s.updateNavDots(s.curPage)
-    }
-
     function handleTransitionEnd(){
       disableTransition();
       status.current.isAnimating=false;
       props.parentStatus.current.isAnimating = false;  // child mutates parent again
       props.onAfterScroll(status, props.layoutIndex)
-      forceCheck()
+      forceCheck() // force all lazy-loading Slides to load if they are currently in view
     }
 
   /* **************************************************************************
-    *          DATA SHARING (between nested child and parent Slider components)
+    *  DATA SHARING (between nested child and parent Slider components)
     *//////////////////////////////////////////////////////////////////////////
       /****************************************************************************
-       * Child shares 'resetLinearTranslate' (from useTouchEvent hook) with parent.
+       * Child mutates (Array.push) parent's status.current.childStatus array
+       *
+       *          by pushing its own `status` ref object to the array
        *///////////////////////////////////////////////////////////////////////////
     props.parentStatus.current.childStatus.push(status)
 
       /****************************************************************************
-       * Parent clones children, sharing a direct reference to its own `status`
-       * object with each of the child sliders (SubSlider components)
+       *                  Parent clones each member of props.children,
+       *
+       * sharing a its `status` ref object object with each of the child sliders (SubSlider components)
        *///////////////////////////////////////////////////////////////////////////
     let parentStatus = status;
     let activated_children =  React.Children.toArray(props.children).map((child, i) => {
@@ -241,46 +138,50 @@ export function Slider(props) {
     })
 
       /****************************************************************************
-       * Memoize slider container to prevent re-renders & adjust styling for horizontal sliders
+       *                       Simultaneously does:
+       *
+       *  - memoize slider container to prevent unnecessary re-renders/constructions
+       *  - mutate children again to adjust styling for horizontal sliders
        *///////////////////////////////////////////////////////////////////////////
 
-    const Main = () => useMemo(() => {
-      const children = activated_children.map(
-        (child, i) => {
-          let transformedChild = (props.orientation===`y`)
-                                      ? child
-                                      : React.cloneElement(child, {
-                                          style: {
-                                            ...child.props.style,
-                                            position: 'absolute',
-                                            top: '0px',
-                                            transform: `translatex(${i*100}vw)`
-                                          },
-                                        })
-          return transformedChild;
-      });
+          const Main = () => useMemo(() => {
+              const children = activated_children.map((child, i) => {
+                      let horizontalTranslate = { position:'absolute',  top:'0px',  transform:`translatex(${i*100}vw)` };
+                      // only horizontally translate non-vertical slides
+                      let transformedChild = (props.orientation===`y`)
+                          ? child
+                          : React.cloneElement(child, {
+                              style: {
+                                ...child.props.style,
+                                ...horizontalTranslate
+                              },
+                            })
+                      return transformedChild;
+              });
 
-      return (
-        <div>
-          <div
-            onTransitionEnd={ handleTransitionEnd }
-            ref={ containerEl }
-            style={{ width: '100%', height: `100%`, position: 'fixed', ...props.style }}
-          >
-            {children}
-          </div>
-          <NavigationDots
-            layoutIndex={props.layoutIndex}
-            orientation={props.orientation}
-            initialPage={props.initialPage}
-            status={status}
-            shouldDisplay={props.showNavDots}
-            color={props.navDotColor}
-            pos={props.navDotPos}
-          />
-        </div>
-      );
-    });
+              return (
+                          <div>
+                              <div
+                                onTransitionEnd={ handleTransitionEnd }
+                                ref={ containerEl }
+                                style={{ width: '100%', height: `100%`, position: 'fixed', ...props.style }}
+                              >
+                                  {
+                                    children
+                                  }
+                              </div>
+                            <NavigationDots
+                              layoutIndex={props.layoutIndex}
+                              orientation={props.orientation}
+                              initialPage={props.initialPage}
+                              status={status}
+                              shouldDisplay={props.showNavDots}
+                              color={props.navDotColor}
+                              pos={props.navDotPos}
+                            />
+                          </div>
+              );
+          });
 
     return <Main />
   };
@@ -449,9 +350,6 @@ const NavDotContainer = ({children, orientation, pos}) => {
     alignContent: 'center',
     alignItems: 'center',
   }
-
-
-
 
   let verticalStyle = {
     width: '0.14em',

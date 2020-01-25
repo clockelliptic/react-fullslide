@@ -44,6 +44,8 @@ A maximum (1-indexed) nesting depth of 2 is supported. That means a single ances
 
 Why? Because this component exists on a real 2-dimensional plane. Each additional layer of nesting requires either (a) an additional dimension of motion or (b) a different imlementation.
 
+*In the future, various built-in methods of adding addition scroll dimensionality will be supported.*
+
 ```
 export default function NestedSliderApp (props) {
     return (
