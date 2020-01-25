@@ -108,23 +108,31 @@ export function Slider(props) {
     function disableTransition(){ setStyles({ transition: 'transform 0s' }) }
 
     function changePage(pageSelector, status, source, duration, easing){
+
         let p_S = props.parentStatus.current,
             s = status.current,
-            n = pageSelector(s.curPage);
+            nextPage = pageSelector(s.curPage);
 
-      /****************************************************************************
-         *                       MOUSEWHEEL ONLY
-         * Page-change behavior is negotiated between parent and child for events using these functions (preventNext, PreventPrev, preventPageChange)
-         *////////////////////////////////////////////////////////////////////////
+        const turning = {
+            to_firstPage: () => (nextPage===1),
+            to_lastPage: () => (nextPage===s.maxPage),
+            to_a_middlePage: () => (nextPage>1 && nextPage<s.maxPage),
+            beyond_pageRange: () => (nextPage<1 || nextPage>s.maxPage),
+            decreasing: () => (nextPage < s.curPage),
+            increasing: () => (nextPage > s.curPage)
+        }
 
+        const is = {
+          a_parentSlider: () => props.layoutIndex === 0,
+          a_childSlider: () => props.layoutIndex > 0
+        }
 
-      /*  COMMON SLIDER RULES
+      /*  PARENT SLIDER's RULES
        */
-        const preventNext = _ => {
+        const prevent_NextPage = _ => {
             // forces wheel navigation to browse incrementally through all slides from low pages to high pages, including slides that contain child sliders
-            let increasing = n>s.curPage,
-                increaseNotAllowed = !s.allowNext,
-                stopPageTurn = (increasing && increaseNotAllowed);
+            let increaseNotAllowed = !s.allowNext,
+                stopPageTurn = (turning.increasing() && increaseNotAllowed);
 
             let childSliderInView = s.childSliderIndices.includes(s.curPage),
                 childSliderAnimating = s.childStatus.map(childStatus => childStatus.current.isAnimating).includes(true),
@@ -132,11 +140,10 @@ export function Slider(props) {
 
             return (childSliderActive && stopPageTurn && source===SOURCES.WHEEL)
         }
-        const preventPrev = _ => {
+        const prevent_PrevPage = _ => {
             // forces wheel navigation to browse incrementally through all slides from low pages to high pages, including slides that contain child sliders
-            let decreasing = n<s.curPage,
-                decreaseNotAllowed = !s.allowPrev,
-                stopPageTurn = (decreasing && decreaseNotAllowed);
+            let decreaseNotAllowed = !s.allowPrev,
+                stopPageTurn = (turning.decreasing() && decreaseNotAllowed);
 
             let childSliderInView = s.childSliderIndices.includes(s.curPage),
                 childSliderAnimating = s.childStatus.map(childStatus => childStatus.current.isAnimating).includes(true),
@@ -145,57 +152,65 @@ export function Slider(props) {
             return (childSliderActive && stopPageTurn && source===SOURCES.WHEEL)
         }
 
-      /*  CHILD-SPECIFIC SLIDER RULES
+        const prevent_parent_PageChange = () => (is.a_parentSlider() && (prevent_NextPage() || prevent_PrevPage()) )
+
+        /*  CHILD-SPECIFIC SLIDER's RULES
        */
-        const preventPageChange = _ => {
+        const prevent_child_PageChange = _ => {
             // prevents child sliders from changing pages when out of view or when parent is animating
             let inView = (props.layoutIndex === p_S.curPage),
                 parentAnimating = p_S.isAnimating;
-            return ( !inView || parentAnimating );
+            return (is.a_childSlider() && ( !inView || parentAnimating ));
         }
 
       /***************************************************************
          * Page-change behavior is negotiated between parent and child
+         *
+         * Child slider mutates parent slider's `status` objects in order
+         * to coordinate ordered, well-defined page turns
          *////////////////////////////////////////////////////////////
-        if (props.layoutIndex && preventPageChange()) return;
 
-      /***************************************************************
-       * Child slider mutates parent slider's `status` objects in order to coordinate ordered page turns
-       *////////////////////////////////////////////////////////////
-        if (n<1 || n>s.maxPage) {
+        // child gives priority to parent if parent is already animating by returning early
+        if (prevent_child_PageChange()) return;
+
+        // if the child is allowed to continue they inform the parent of their behavior
+        if (turning.beyond_pageRange()) {
           p_S.allowPrev = true;
           p_S.allowNext = true;
-          return;
-        } else {
-            if (n===1) {
-              p_S.allowPrev = true;
-              p_S.allowNext = false;
-            }
-            if (n>1) {
-              p_S.allowPrev = false;
-            }
-            if (n<s.maxPage) {
-              p_S.allowNext = false;
-            }
-            if (n===s.maxPage) {
-              p_S.allowNext = true;
-              p_S.allowPrev = false;
-            }
-
-
-            props.onBeforeScroll(status, props.layoutIndex)
-            // perform the actual page change AFTER child mutates parent
-            if (preventPrev()) return;
-            if (preventNext()) return;
-            s.curPage = n;
-            s.isAnimating = true;
-            p_S.isAnimating = true; // child mutates parent again
-            enableTransition(duration, easing);
-            setStyles({
-                transform: `translate${props.orientation}(-${100*(s.curPage - 1)}${(props.orientation===`y`)?`vh`:`vw`} )`,
-            })
-            s.updateNavDots(s.curPage)
         }
+        if (turning.to_firstPage()) {
+          p_S.allowPrev = true;
+          p_S.allowNext = false;
+        }
+        if (turning.to_a_middlePage()) {
+          p_S.allowPrev = false;
+        }
+        if (turning.to_lastPage()) {
+          p_S.allowNext = true;
+          p_S.allowPrev = false;
+        }
+        // parent makes decisions in response to child's behavior
+        if (prevent_parent_PageChange()) return;
+
+
+      /***************************************************************
+         * Typical page-change behavior is resumed following parent-child negotiations
+         *////////////////////////////////////////////////////////////
+        if (turning.beyond_pageRange()) return;
+
+        props.onBeforeScroll(status, props.layoutIndex)
+
+        s.curPage = nextPage;
+
+        // all sliders are informed that an animation is occurring (sibling sliders are informed via the parent's status)
+        s.isAnimating = true;
+        p_S.isAnimating = true;
+
+        enableTransition(duration, easing);
+        setStyles({
+            transform: `translate${props.orientation}(-${100*(s.curPage - 1)}${(props.orientation===`y`)?`vh`:`vw`} )`,
+        })
+        s.updateNavDots(s.curPage)
     }
 
     function handleTransitionEnd(){
@@ -260,6 +275,8 @@ export function Slider(props) {
             initialPage={props.initialPage}
             status={status}
             shouldDisplay={props.showNavDots}
+            color={props.navDotColor}
+            pos={props.navDotPos}
           />
         </div>
       );
@@ -276,6 +293,8 @@ export function Slider(props) {
 
   Slider.defaultProps = {
     showNavDots: true,
+    navDotColor: '#fff',
+    navDotPos: 'primary', //or 'secondary' ....  passed to <NavigationDots />  then to  <NavDotContainer />
     initialPage: 1,
     buttonIds: [],
     layoutIndex: 0, // default page index of top-level parent Slider
@@ -305,7 +324,9 @@ export function Slider(props) {
   }
 
   Slider.propTypes = {
+    navDotColor: PropTypes.string,
     showNavDots: PropTypes.bool,
+    navDotPos: PropTypes.string,
     initialPage: PropTypes.number,
     buttonIds: PropTypes.array,
     layoutIndex: PropTypes.number,
@@ -334,15 +355,8 @@ export function SubSlider(props) {
     <Slide style={{...props.style}}>
       {Buttons ? <Buttons show={props.showButtons} /> : null}
       <Slider
-        initialPage={props.initialPage}
-        onAfterScroll={props.onAfterScroll}
-        onBeforeScroll={props.onBeforeScroll}
-        parentStatus={props.parentStatus}
-        layoutIndex={props.layoutIndex}
+        {...props}
         orientation={`x`}
-        touchEnabled={true}
-        wheelEnabled={true}
-        buttonIds={props.buttonIds}
       >
         {props.children}
       </Slider>
@@ -356,7 +370,15 @@ export function SubSlider(props) {
    * **********************************************
    */
 
-export const NavigationDots = ({layoutIndex, initialPage, orientation, status, shouldDisplay=true}) => {
+export const NavigationDots = ({
+  layoutIndex,
+  initialPage,
+  orientation,
+  status,
+  pos,
+  shouldDisplay=true,
+  color='#fff'
+}) => {
   if (!shouldDisplay) return null;
 
   let navDotRefs = Array(status.current.maxPage).fill().map(_ => React.createRef()),
@@ -365,8 +387,8 @@ export const NavigationDots = ({layoutIndex, initialPage, orientation, status, s
   let prevPage = status.current.curPage;
 
   const navCallback = (curPage) => {
-    navDotStyleSetters[prevPage-1]({border: '0em solid #fff'})
-    navDotStyleSetters[curPage-1]({border: '0.04em solid #fff'})
+    navDotStyleSetters[prevPage-1]({border: `0em solid ${color}`})
+    navDotStyleSetters[curPage-1]({border: `0.04em solid ${color}`})
     prevPage = curPage;
   }
 
@@ -374,24 +396,27 @@ export const NavigationDots = ({layoutIndex, initialPage, orientation, status, s
   status.current.updateNavDots = navCallback;
 
   return (
-    <NavDotContainer orientation={orientation}>
+    <NavDotContainer
+      orientation={orientation}
+      pos={pos}
+    >
       {
         Array(status.current.maxPage).fill().map((_, i) =>
               <NavDot
                 ref={navDotRefs[i]}
                 key={`dot-${layoutIndex}-${i}`}
                 active={initialPage === i+1}
+                color={color}
               />
         )
       }
     </NavDotContainer>
-
   )
 }
 
 const Dot = styled.div`
-  background: #fff;
-  border: ${props => props.active ? '0.04em' : '0em'} solid #fff;
+  background: ${props => props.color};
+  border: ${props => props.active ? '0.04em' : '0em'} solid ${props => props.color};
   border-radius: 50%;
   width: 0.06em;
   height: 0.06em;
@@ -402,32 +427,36 @@ const Dot = styled.div`
      *   "!important" *MUST* be set otherwise the styleApplicator/setStyles
      *    function will set inline styles that override these hover styles.
      */
-    border: 0.04em solid #fff !important;
+    border: 0.04em solid ${props => props.color} !important;
     margin: 0.05em !important;
   }
 `;
 
-const NavDot = React.forwardRef(({active}, ref) => (
+const NavDot = React.forwardRef(({active, color}, ref) => (
   <Dot
     ref={ref}
     active={active}
+    color={color}
   />
 ));
 
-const NavDotContainer = ({children, orientation}) => {
+const NavDotContainer = ({children, orientation, pos}) => {
   let baseStyle = {
     position: 'absolute',
     zIndex: '99999999999',
-    color: '#fff',
     fontSize: '5em',
     display: 'flex',
     alignContent: 'center',
     alignItems: 'center',
   }
 
+
+
+
   let verticalStyle = {
     width: '0.14em',
-    right: '1vw',
+    right: `${(pos===`primary`) ? '1%' : 'auto'}`,
+    left: `${(pos===`secondary`) ? '1%' : 'auto'}`,
     top: '50%',
     transform: 'translateY(-50%)',
     flexDirection: 'column'
@@ -435,13 +464,16 @@ const NavDotContainer = ({children, orientation}) => {
 
   let horizontalStyle = {
     height: '0.14em',
-    bottom: '1vh',
+    bottom: `${(pos===`primary`) ? '1%' : 'auto'}`,
+    top: `${(pos===`secondary`) ? '1%' : 'auto'}`,
     left: '50%',
     transform: 'translateX(-50%)',
     flexDirection: 'row'
   }
 
-  let style = orientation==='y' ? {...baseStyle, ...verticalStyle} : {...baseStyle, ...horizontalStyle}
+  let style = (orientation==='y')
+                    ? {...baseStyle, ...verticalStyle}
+                    : {...baseStyle, ...horizontalStyle}
 
   return (
     <div style={style} >
