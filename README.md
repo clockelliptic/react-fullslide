@@ -38,7 +38,7 @@ export default function App (props) {
 ## Minimal Nested Slider Example
 
 
-`SubSlider`__ and __`Slider` components should be the *__only__ immediate* children of `Slider` components.
+`SubSlider` and `Slider` components should be the *__only__ immediate* children of `Slider` components.
 
 A maximum (1-indexed) nesting depth of 2 is supported. That means a single ancestor, with any number of second-generation children. In other words, the parent `Slider` can have mulitple *direct* `SubSlider` children.
 

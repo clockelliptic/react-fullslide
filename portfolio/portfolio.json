@@ -1,6 +1,6 @@
 {
-    "title":"react-full-page-slider",
-    "description":"A full-page sliding layout with intelligent touch and scroll handling. Used for the landing page of this very website!",
+    "title":"react-fullslide",
+    "description":"A full-page sliding layout with intelligent touch and scroll handling.",
     "tags":{
        "languages":[
           "javascript"
