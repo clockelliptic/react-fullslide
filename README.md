@@ -1,4 +1,4 @@
-# react-full-page-slider
+# react-fullslide
 
 This is a classless React.js implementation of a full-page virtual scrolling component. Vertical and Horizontal sliders can be nested for an advanced layout. Intelligent wheel-handling and touch-handling give users a linear experience, guiding them frame-by-frame through a presentation layout.
 
