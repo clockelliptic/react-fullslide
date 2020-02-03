@@ -19,9 +19,6 @@ const ScrollSlide = styled(Section)`
 `;
 
 export const Slide = props => {
-  /*
-   * Must `import { forceCheck() } from 'react-lazyload'` and pass `forceCheck` as callback to props.onAfterScroll
-   */
   const children = props.children,
         className = props.className,
         style = props.style;

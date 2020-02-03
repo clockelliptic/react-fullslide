@@ -1,0 +1,26 @@
+.simplebar-scrollbar {
+    background: rgba(0,0,0,0)
+}
+
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar:before {
+    top: 2px;
+    bottom: 2px;
+}
+
+
+.simplebar-scrollbar.simplebar-visible:before {
+    opacity: .5;
+    transition: opacity 0s linear;
+}
+
+.simplebar-scrollbar:before {
+    position: absolute;
+    content: '';
+    background: #fff;
+    border-radius: 7px;
+    left: 2px;
+    right: 2px;
+    opacity: 0;
+    transition: opacity .2s linear;
+}

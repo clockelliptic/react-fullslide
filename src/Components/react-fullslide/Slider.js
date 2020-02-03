@@ -172,7 +172,6 @@ export function Slider(props) {
                               </div>
                             <NavigationDots
                               layoutIndex={props.layoutIndex}
-                              orientation={props.orientation}
                               initialPage={props.initialPage}
                               status={status}
                               shouldDisplay={props.showNavDots}
@@ -195,7 +194,7 @@ export function Slider(props) {
   Slider.defaultProps = {
     showNavDots: true,
     navDotColor: '#fff',
-    navDotPos: 'primary', //or 'secondary' ....  passed to <NavigationDots />  then to  <NavDotContainer />
+    navDotPos: 'right',
     initialPage: 1,
     buttonIds: [],
     layoutIndex: 0, // default page index of top-level parent Slider
@@ -257,7 +256,6 @@ export function SubSlider(props) {
       {Buttons ? <Buttons show={props.showButtons} /> : null}
       <Slider
         {...props}
-        orientation={`x`}
       >
         {props.children}
       </Slider>
@@ -341,7 +339,9 @@ const NavDot = React.forwardRef(({active, color}, ref) => (
   />
 ));
 
-const NavDotContainer = ({children, orientation, pos}) => {
+const NavDotContainer = ({children, pos}) => {
+
+  let orientation = (pos==='right'||pos=='left') ? 'y' : 'x';
   let baseStyle = {
     position: 'absolute',
     zIndex: '99999999999',
@@ -351,27 +351,24 @@ const NavDotContainer = ({children, orientation, pos}) => {
     alignItems: 'center',
   }
 
-  let verticalStyle = {
-    width: '0.14em',
-    right: `${(pos===`primary`) ? '1%' : 'auto'}`,
-    left: `${(pos===`secondary`) ? '1%' : 'auto'}`,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    flexDirection: 'column'
+  let adaptiveStyle = {
+    flexDirection: `${(orientation==='y') ? 'column' : 'row'}`,
+
+    height: `${(orientation==='y') ? 'auto' : '0.14em'}`,
+    width: `${(orientation==='x') ? 'auto' : '0.14em'}`,
+
+    right: `${(pos===`right`) ? '1%' : 'auto'}`,
+    left: `${(pos===`left`) ? '1%' : (orientation==='x') ? '50%' : 'auto'}`,
+
+    bottom: `${(pos===`bottom`) ? '1%' : 'auto'}`,
+    top: `${(pos===`top`) ? '1%' : (orientation==='y') ? '50%' : 'auto'}`,
+
+    transform: `${(orientation==='x') ? 'translateX(-50%)' : 'auto'}`,
+    transform: `${(orientation==='y') ? 'translateY(-50%)' : 'auto'}`,
+
   }
 
-  let horizontalStyle = {
-    height: '0.14em',
-    bottom: `${(pos===`primary`) ? '1%' : 'auto'}`,
-    top: `${(pos===`secondary`) ? '1%' : 'auto'}`,
-    left: '50%',
-    transform: 'translateX(-50%)',
-    flexDirection: 'row'
-  }
-
-  let style = (orientation==='y')
-                    ? {...baseStyle, ...verticalStyle}
-                    : {...baseStyle, ...horizontalStyle}
+  let style = {...baseStyle, ...adaptiveStyle};
 
   return (
     <div style={style} >

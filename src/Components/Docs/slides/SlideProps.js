@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components'
+import { Responsive, WidthProvider } from 'react-grid-layout';
 import { Col, Box, CodeSnippet, CodeBlock, Terminal } from './helpers'
 
 /* Layout */
-import { Responsive, WidthProvider } from 'react-grid-layout';
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 /*
@@ -15,7 +15,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
  * **************************************************
  */
 
-export function MinimalExample () {
+export function SlideProps () {
     const static_layout = true;
     const layouts = {
         xl: [
@@ -83,38 +83,25 @@ export function MinimalExample () {
     }
 
     const minimalExample = `
-export default function App (props) {
-    return (
-        <Slider>
+----------------------------------------------------------------------
+------  prop  ----  default value  -------  type  ----------  comments
+----------------------------------------------------------------------
+     lazy:      [true,               PropTypes.bool  ],
+     once:      [true,               PropTypes.bool  ],  // lazyloaded only once?
 
-            <Slide> 1 </Slide>
-
-            <Slide> 2 </Slide>
-
-            <Slide> 3 </Slide>
-
-        </Slider>
-    );
-}
-    `;
+`;
 
     return(<React.Fragment>
                 <ResponsiveGridLayout {...gridParams} style={{minHeight:'100vh', minWidth:'100vw', overflow: 'hidden'}}>
                     <Col key="center" color="dark">
                         <Box flex={true}>
-                            <strong>Very Important:</strong><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should be the <em><strong>only</strong> immediate</em> children of <CodeSnippet>Slider</CodeSnippet> components. <br /><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should <em><strong>always</strong> be the immediate</em> children of either <CodeSnippet>Slider</CodeSnippet> or <CodeSnippet>SubSlider</CodeSnippet> components.
+                            If lazyloading slides have <CodeSnippet>{`once={false}`}</CodeSnippet>, they will be unmounted every time they are invisible.
                         </Box>
                     </Col>
-                    <Col key="left" color="light" align={'start'} alignSelf={'center'}>
+                    <Col key="left" color="light">
                         <Box>
-                            <h1>
-                            react-fullslide
-                            </h1>
-
                             <h4>
-                            Minimal Example
+                                <CodeSnippet>Slide</CodeSnippet> defaultProps and propTypes
                             </h4>
 
                             <Terminal>

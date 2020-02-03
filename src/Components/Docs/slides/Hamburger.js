@@ -2,6 +2,10 @@ import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components'
 import { Col, Box, CodeSnippet, CodeBlock, Terminal } from './helpers'
 
+import gametext from './gametext.svg'
+import hamburger from './hamburger.svg'
+import SVG from 'react-inlinesvg'
+
 /* Layout */
 import { Responsive, WidthProvider } from 'react-grid-layout';
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -15,22 +19,22 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
  * **************************************************
  */
 
-export function MinimalExample () {
+export function Hamburger () {
     const static_layout = true;
     const layouts = {
         xl: [
-            {i: 'left', x: 0 , y:0 , w:4 , h:1 , static: static_layout},
-            {i: 'center' , x:4 , y:0 , w:3 , h:1 , static: static_layout},
+            {i: 'left', x: 0 , y:0 , w:2.5 , h:1 , static: static_layout},
+            {i: 'center' , x:2.5 , y:0 , w:4.5 , h:1 , static: static_layout},
             {i: 'right' , x:4 , y:0 , w:0 , h:0 , static: static_layout},
         ],
         lg: [
-            {i: 'left', x: 0 , y:0 , w:4 , h:1 , static: static_layout},
-            {i: 'center' , x:4 , y:0 , w:3 , h:1 , static: static_layout},
+            {i: 'left', x: 0 , y:0 , w:2.5 , h:1 , static: static_layout},
+            {i: 'center' , x:2.5 , y:0 , w:4.5 , h:1 , static: static_layout},
             {i: 'right' , x:4 , y:0 , w:0 , h:0 , static: static_layout},
         ],
         md: [
-            {i: 'left', x: 0 , y:0 , w:4 , h:1 , static: static_layout},
-            {i: 'center' , x:4 , y:0 , w:3 , h:1 , static: static_layout},
+            {i: 'left', x: 0 , y:0 , w:2.5 , h:1 , static: static_layout},
+            {i: 'center' , x:2.5 , y:0 , w:4.5 , h:1 , static: static_layout},
             {i: 'right' , x:99 , y:0 , w:0 , h:0 , static: static_layout},
         ],
         sm: [
@@ -62,7 +66,7 @@ export function MinimalExample () {
             xs: 1,
         },
         "containerPadding" : {
-            xl: [0, 0],
+            xl: [56, 0],
             lg: [0, 0],
             md: [0, 0],
             sm: [0, 0],
@@ -82,50 +86,37 @@ export function MinimalExample () {
         "layouts" : layouts,
     }
 
-    const minimalExample = `
-export default function App (props) {
-    return (
-        <Slider>
-
-            <Slide> 1 </Slide>
-
-            <Slide> 2 </Slide>
-
-            <Slide> 3 </Slide>
-
-        </Slider>
-    );
-}
-    `;
 
     return(<React.Fragment>
                 <ResponsiveGridLayout {...gridParams} style={{minHeight:'100vh', minWidth:'100vw', overflow: 'hidden'}}>
-                    <Col key="center" color="dark">
-                        <Box flex={true}>
-                            <strong>Very Important:</strong><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should be the <em><strong>only</strong> immediate</em> children of <CodeSnippet>Slider</CodeSnippet> components. <br /><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should <em><strong>always</strong> be the immediate</em> children of either <CodeSnippet>Slider</CodeSnippet> or <CodeSnippet>SubSlider</CodeSnippet> components.
-                        </Box>
-                    </Col>
-                    <Col key="left" color="light" align={'start'} alignSelf={'center'}>
-                        <Box>
-                            <h1>
-                            react-fullslide
-                            </h1>
 
-                            <h4>
-                            Minimal Example
-                            </h4>
+                    <div
+                        key='left'
+                        style={{
+                            position: 'absolute',
+                            top: '0',
+                            height: '100vh'
+                        }}
+                    >
+                            <SVG style={{display: 'inline-block', position: 'absolute', marginTop: '25%', height: '50vh'}} src={hamburger} />
+                    </div>
 
-                            <Terminal>
-                            {
-                                minimalExample
-                            }
-                            </Terminal>
+                    <div
+                        key='center'
+                        style={{
+                            position: 'absolute',
+                            top: '0',
+                            height: '100vh'
+                        }}
+                    >
+                            <SVG src={gametext} style={{display: 'block', height: '50vh', marginTop: '15%'}} />
 
-                        </Box>
-                    </Col>
-                    <Col key="right" color="mid" />
+                            <div style={{display: 'block', color: '#fff', fontSize: '2em', width: '100%', textAlign: 'center'}}>
+                                SWIPE OR SCROLL TO CONTINUE
+                            </div>
+
+                    </div>
+
                 </ResponsiveGridLayout>
     </React.Fragment>)
 }

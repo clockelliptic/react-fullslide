@@ -2,18 +2,31 @@ import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components'
 import { Slider, SubSlider, Slide } from '../react-fullslide'
 
+import gametext from './slides/gametext.svg'
+import hamburger from './slides/hamburger.svg'
+import SVG from 'react-inlinesvg'
+
 import { MinimalExample } from './slides/MinimalExample'
 import { MinimalNested } from './slides/MinimalNested'
 import { AddingSlideContent } from './slides/AddingSlideContent'
+import { SliderProps } from './slides/SliderProps'
+import { SlideProps } from './slides/SlideProps'
+import { Hamburger } from './slides/Hamburger'
 
 export default function DocSlides() {
     return (
           <Slider
-            orientation={`y`}
+            orientation={`x`}
             transDuration={0.5}
-            initialPage={3}
-            navDotColor={"#000"}
+            initialPage={1}
+            navDotColor={"rgb(25, 144, 184)"}
+            navDotPos={'top'}
           >
+
+              <Slide style={{backgroundColor:'#ffaada'}}>
+                <Hamburger />
+              </Slide>
+
               <Slide style={{backgroundColor:'rgba(255,255,255,1)'}}>
                 <MinimalExample />
                 <Num>1</Num>
@@ -24,40 +37,28 @@ export default function DocSlides() {
                 <Num>2</Num>
               </Slide>
 
+              <Slide style={{backgroundColor:'rgba(0,0,0,0.0)'}}>
+                <Num>3</Num>
+                <AddingSlideContent />
+              </Slide>
+
               <SubSlider
                 style={{backgroundColor:'rgba(255,255,255,1)'}}
                 initialPage={1}
                 transDuration={0.8}
-                navDotColor={"#000"}
-                navDotPos={'secondary'}
+                navDotColor={"rgb(25, 144, 184)"}
               >
                     <Slide style={{backgroundColor:'rgba(0,0,0,0.0)'}}>
-                      <Num>3.1</Num>
-                      <AddingSlideContent />
+                      <SliderProps />
+                      <Num>4.1</Num>
                     </Slide>
                     <Slide style={{backgroundColor:'rgba(0,0,0,0.1)'}}>
-                      <Num>3.2</Num>
-                    </Slide>
-                    <Slide style={{backgroundColor:'rgba(0,0,0,0.2)'}}>
-                      <Num>3.3</Num>
+                      <SlideProps />
+                      <Num>4.2</Num>
                     </Slide>
               </SubSlider>
 
-              <Slide style={{backgroundColor:'rgba(255,255,255,1)'}}>
-                <Num>4</Num>
-              </Slide>
 
-              <Slide style={{backgroundColor:'rgba(255,255,255,1)'}}>
-                <Num>5</Num>
-              </Slide>
-
-              <Slide style={{backgroundColor:'rgba(255,255,255,1)'}}>
-                <Num>6</Num>
-              </Slide>
-
-              <Slide style={{backgroundColor:'rgba(255,255,255,1)'}}>
-                <Num>7</Num>
-              </Slide>
           </Slider>
     )
 }
@@ -77,15 +78,15 @@ const Num = styled.div`
     text-align: center;
     font-size: 2em;
     line-height: 0.8em;
-    font-weight: 600;
-    color: #000;
+    font-weight: 800;
+    color: rgb(25, 144, 184);
     position: absolute;
-    border: 1px solid #000;
+    border: 4px solid rgb(25, 144, 184);
     border-radius: 50%;
     top: 1vh;
     right: 1vw;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.6em;
+    height: 1.6em;
     z-index: 99999999;
     /*transform: translatey(-50%) translatex(-50%);*/
 `;

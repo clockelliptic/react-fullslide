@@ -15,7 +15,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
  * **************************************************
  */
 
-export function MinimalExample () {
+export function SliderProps () {
     const static_layout = true;
     const layouts = {
         xl: [
@@ -83,38 +83,37 @@ export function MinimalExample () {
     }
 
     const minimalExample = `
-export default function App (props) {
-    return (
-        <Slider>
+----------------------------------------------------------------------
+------  prop  ----  default value  -------  type  ----------  comments
+----------------------------------------------------------------------
+     showNavDots:      [true,         PropTypes.bool  ],
+     navDotColor:      ['#fff',       PropTypes.string],
+     navDotPos:        ['primary',    PropTypes.string], //or 'secondary'
+     initialPage:      [1,            PropTypes.number],
+     buttonIds:        [[],           PropTypes.array ],
+     easing:           ['ease-out',   PropTypes.string],
+     initialPage:      [1,            PropTypes.number], // 1-based indexing
+     touchEnabled:     [true,         PropTypes.bool  ],
+     wheelEnabled:     [true,         PropTypes.bool  ],
+     onAfterScroll:    [function(){}, PropTypes.func  ],
+     onBeforeScroll:   [function(){}, PropTypes.func  ],
+     swipeSensitivity: [100,          PropTypes.number],
+     transDuration:    [1,            PropTypes.number], // seconds
+     orientation:      ['y' (or 'x'), PropTypes.string],
 
-            <Slide> 1 </Slide>
-
-            <Slide> 2 </Slide>
-
-            <Slide> 3 </Slide>
-
-        </Slider>
-    );
-}
-    `;
+`;
 
     return(<React.Fragment>
                 <ResponsiveGridLayout {...gridParams} style={{minHeight:'100vh', minWidth:'100vw', overflow: 'hidden'}}>
                     <Col key="center" color="dark">
                         <Box flex={true}>
-                            <strong>Very Important:</strong><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should be the <em><strong>only</strong> immediate</em> children of <CodeSnippet>Slider</CodeSnippet> components. <br /><br />
-                            <CodeSnippet>Slide</CodeSnippet> components should <em><strong>always</strong> be the immediate</em> children of either <CodeSnippet>Slider</CodeSnippet> or <CodeSnippet>SubSlider</CodeSnippet> components.
+                            Both <CodeSnippet>Slider</CodeSnippet> and <CodeSnippet>SubSlider</CodeSnippet> can take any of these props.
                         </Box>
                     </Col>
-                    <Col key="left" color="light" align={'start'} alignSelf={'center'}>
+                    <Col key="left" color="light">
                         <Box>
-                            <h1>
-                            react-fullslide
-                            </h1>
-
                             <h4>
-                            Minimal Example
+                                <CodeSnippet>Slider</CodeSnippet> defaultProps and propTypes
                             </h4>
 
                             <Terminal>

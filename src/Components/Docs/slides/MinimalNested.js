@@ -1,8 +1,24 @@
 import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components'
-
-/* Layout */
+import { Col, Box, CodeSnippet, CodeBlock, Terminal } from './helpers'
 import { Responsive, WidthProvider } from 'react-grid-layout';
+
+
+
+/*
+
+import hljs from 'highlight.js/lib/highlight';
+import javascript from 'highlight.js/lib/languages/javascript';
+import 'highlight.js/styles/arta.css';
+hljs.registerLanguage('javascript', javascript);
+hljs.configure({
+    tabReplace: '    ',
+    useBR: true,
+})
+hljs.initHighlighting()
+*/
+
+
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 /*
@@ -113,10 +129,11 @@ export default function NestedSliderApp (props) {
                 <ResponsiveGridLayout {...gridParams} style={{minHeight:'100vh', minWidth:'100vw', overflow: 'hidden'}}>
                     <Col key="center" color="dark">
                         <Box flex={true}>
-                            <strong>Very Important:</strong><br />
-                            <CodeSnippet>SubSlider</CodeSnippet><strong> and </strong><CodeSnippet>Slider</CodeSnippet> components should be the <em><strong>only</strong> immediate</em> children of <CodeSnippet>Slider</CodeSnippet> components. <br /><br />
+                            <strong>Take-away:</strong><br />
+                            <CodeSnippet>Slide</CodeSnippet><strong> and </strong><CodeSnippet>SubSlider</CodeSnippet> components should be the <em><strong>only</strong> immediate</em> children of <CodeSnippet>Slider</CodeSnippet> components. <br /><br />
                             A maximum (1-indexed) nesting depth of 2 is supported. That means a single ancestor, with any number of second-generation children. In other words, the parent <CodeSnippet>Slider</CodeSnippet> can have mulitple <em>direct</em> <CodeSnippet>SubSlider</CodeSnippet> children. <br /><br />
-                            Why? Because this component exists on a real 2-dimensional plane. Each additional layer of nesting requires either (a) an additional dimension of motion or (b) a different imlementation.
+                            Why? Because this component exists on a real 2-dimensional plane. Each additional layer of nesting requires either (a) an additional dimension of motion or (b) a different imlementation. <br /><br />
+                            Methods for adding additional scroll dimensions will be included in future releases.
                         </Box>
                     </Col>
                     <Col key="left" color="light">
@@ -125,139 +142,15 @@ export default function NestedSliderApp (props) {
                                 Minimal Example - Nested Sliders
                             </h4>
 
-                            <CodeBlock>
-                            {
-                                minimalExample
-                            }
-                            </CodeBlock>
+                            <Terminal >
+                                {
+                                    minimalExample
+                                }
+                            </Terminal>
 
                         </Box>
                     </Col>
                     <Col key="right" color="mid" />
                 </ResponsiveGridLayout>
     </React.Fragment>)
-}
-
-const CodeSnippet = styled.code`
-    background: rgba(0,0,0,0.1)
-`;
-
-const CodeBlock = ({children}) => {
-    const PreCode = ({children}) => (<div><pre><code className={"language-javascript language-js js javascript"}>{children}</code></pre></div>)
-
-    const Block = styled.div`
-        display: block;
-        padding: 1em 1em;
-        background: rgba(0,0,0,0.05);
-        color: #444;
-        white-space: pre;
-        overflow-x: scroll;
-    `;
-
-    return <Block><PreCode>{children}</PreCode></Block>
-}
-
-
-const Col = styled.div`
-    display: flex;
-    flex-direction: column;
-    ${
-        props => {
-            switch(props.color){
-                case 'mid':
-                    return (`
-                        background: rgba(145,165,185,1.0);
-                    `);
-                case 'light':
-                    return (`
-                        background: rgba(255,255,255,1.0);
-                    `);
-                case 'dark':
-                    return (`
-                        background: rgba(195,215,235,1.0);
-                    `);
-            }
-        }
-    }
-`;
-
-const BoxContainer = styled.div`
-    display: ${props => props.flex ? 'flex' : 'block'};
-    overflow-x: hidden;
-    height: 100vh;
-    align-items: center;
-    justify-content: flex-start;
-`;
-
-const BoxContent = styled.div`
-    position: relative;
-    padding: 2% 4% 8% 4%;
-    width: 96%%;
-`;
-
-const Box = ({children, flex}) => {
-    const boxId = `boxContainer${Math.floor(Math.random()*1000)}${new Date().getTime()}`
-
-    const DetectBottom = styled.div`
-        position: absolute;
-        bottom: 0;
-        width: 10%;
-        height: 1px;
-        background-color: rgba(0,0,0,50.1);
-
-    `;
-
-    const status = useRef({
-        atBottom: false,
-    })
-
-    function on_bottomDetected (entries, observer) {
-        status.current.atBottom = true
-        console.log(entries)
-    }
-
-    let options = {
-        root: document.getElementById(`content_${boxId}`),
-        rootMargin: '0px',
-        threshold: 0,
-    }
-
-    let observer = new IntersectionObserver(on_bottomDetected, options)
-
-    useEffect(() => {
-
-        const onWheel = (e) => {
-            console.log("wheel detected")
-            if (status.current.atBottom){
-                console.log('at the bottom!')
-            } else {
-                console.log('not at the bottom')
-                e.stopPropagation()
-                status.current.atBottom = false;
-            }
-        }
-
-        try {
-            observer.observe(document.getElementById(boxId))
-            document.getElementById(boxId).addEventListener('wheel', onWheel)
-        } catch (err) {
-            console.error(err)
-        }
-        return(() => {
-            try {
-                document.getElementById(boxId).removeEventListener('wheel', onWheel)
-            } catch {}
-        })
-    })
-
-    return(
-        <BoxContainer id={boxId} flex={flex}>
-            <BoxContent id={`content_${boxId}`}>
-                <DetectBottom id={`bottom_${boxId}`} />
-                {
-                    children
-                }
-            </BoxContent>
-        </BoxContainer>
-    );
 }
