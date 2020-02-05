@@ -1,6 +1,10 @@
 # react-fullslide
 
-View exampled here: https://clockelliptic.github.io/react-fullslide/
+__What is the best use case for this component?__ Sequential information, or a simple sliding dashboard interface.
+
+View example here: https://clockelliptic.github.io/react-fullslide/
+
+![App Example](https://github.com/clockelliptic/react-fullslide/blob/master/portfolio/vid.gif)
 
 This is a classless React.js implementation of a full-page virtual scrolling component. Vertical and Horizontal sliders can be nested for an advanced layout. Intelligent wheel-handling and touch-handling give users a linear experience, guiding them frame-by-frame through a presentation layout.
 
