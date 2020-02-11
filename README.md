@@ -67,9 +67,9 @@ export default function NestedSliderApp (props) {
             <SubSlider key={'slide-3'}>
                 {
                     childSlides.map((Feature, i) => (
-                        <Slide key={\`slide-3-\${i+1}\`}>
+                        <Slide key={`slide-3-${i+1}`}>
                         /* slides are 1-indexed internally */
-                            {\`3.\${i+1}\`}
+                            {`3.${i+1}`}
                         </Slide>
                     ))
                 }
@@ -107,7 +107,7 @@ export default function SliderApp (props) {
             <SubSlider key={'slide-3'}>
                 {
                     array_of_slideContent.map((SlideContent, i) => (
-                        <Slide key={\`slide-3-\${i}\`}>
+                        <Slide key={`slide-3-${i}`}>
                             <SlideContent />
                         </Slide>
                     ))
@@ -122,9 +122,9 @@ export default function SliderApp (props) {
 ```
 export const SlideContent = (props) => (
     <React.Fragment>
-        {\/*
+        {/*
           * Your slide content goes here.
-          *\/}
+          */}
     </React.Fragment>
 );
 ```
